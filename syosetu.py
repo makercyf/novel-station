@@ -32,6 +32,7 @@ if r.status_code == 200:
     if len(DownloadRange) == 2:
         if DownloadRange[0].isnumeric and DownloadRange[1].isnumeric:
             first, last = DownloadRange[0].strip(), DownloadRange[1].strip()
+            first, last = int(first), int (last)
             if first < 0 or last > LargestChapter:
                 print("Download range is invalid, range set to all chapter")
                 first, last = 1, LargestChapter
