@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - syosetu.py  
-Self-defined range function cannot be used, fixed.
+Self-defined download range function cannot be used, fixed.
 
 ## [1.0.0] - 2022-01-02
 
