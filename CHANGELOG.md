@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.0] - 2022-06-06
+
+### Changed
+- syosetu.py  
+Functionalized the entire program.
+Support automatic content update now.
+
 ## [1.1.0] - 2022-01-06
 
 ### Changed
