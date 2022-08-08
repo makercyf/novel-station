@@ -2,4 +2,3 @@
 cls
 title Syosetu Downloader
 python "syosetu.py"
-@pause
