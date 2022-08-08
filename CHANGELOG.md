@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.3.0] - 2022-08-08
+
+### Added
+- Library function was added to the program.
+- Support CLI now.
+
+### Changed
+- CHANGELOG documentation style changed.
+- OOP concept was applied to the program.
+
 ## [1.2.0] - 2022-06-06
 
 ### Changed
