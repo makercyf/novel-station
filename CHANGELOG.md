@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.3.1] - 2022-08-26
+
+### Changed
+- Update function cannot download the newly added book, bug fixed.
+
 ## [1.3.0] - 2022-08-08
 
 ### Added

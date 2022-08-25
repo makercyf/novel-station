@@ -181,7 +181,7 @@ class ln_downloader():
                 acn = input("Append chapter number to the filename? (Y/n): ")
             acn = self.chapterNumber(acn)
             if not os.path.isdir(f"{self.database_path}/{novel_title}"):
-                os.mkdir(novel_title)
+                os.mkdir(f"{self.database_path}/{novel_title}")
                 exist = False
             else:
                 exist = True
