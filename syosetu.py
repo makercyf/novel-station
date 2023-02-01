@@ -48,8 +48,8 @@ class ln_downloader():
 
     def getInfo(self, r, code):
         website = BeautifulSoup(r.text, 'html.parser')
-        novel_title = website.title.string
-        writer_name = website.find_all("div", class_="novel_writername")[0].find("a").string
+        title = website.title.string
+        writer = website.find_all("div", class_="novel_writername")[0].find("a").string
         description = website.find(id="novel_ex")
         index = website.find_all("div", class_="index_box")[0]
         chapter_link = []
@@ -61,9 +61,9 @@ class ln_downloader():
                 full_chapter_link = "https://ncode.syosetu.com" + link
                 chapter_link.append(full_chapter_link)
         largest_chapter = len(chapter_link)
-        return novel_title, writer_name, description, index, chapter_link, largest_chapter
+        return title, writer, description, index, chapter_link, largest_chapter
 
-    def downloadRangeValidation(self, novel_title, download_range, largest_chapter) -> Tuple[int, int]:
+    def downloadRangeValidation(self, title, download_range, largest_chapter) -> Tuple[int, int]:
         download_range = download_range.split(",")
         if len(download_range) == 2:
             if download_range[0].isnumeric() and download_range[1].isnumeric():
@@ -81,11 +81,11 @@ class ln_downloader():
                 first = 1
                 last = largest_chapter
         else:
-            if not os.path.isfile(f"{self.database_path}/{novel_title}/0. index.html"):
+            if not os.path.isfile(f"{self.database_path}/{title}/0. index.html"):
                 first = 1
                 last = largest_chapter
             else:
-                with open(f"{self.database_path}/{novel_title}/0. index.html", "r", encoding="utf-8") as file:
+                with open(f"{self.database_path}/{title}/0. index.html", "r", encoding="utf-8") as file:
                     for line in file:
                         if 'last =' in line:
                             first = int(re.sub('[^0-9]', '', line)) + 1
@@ -110,21 +110,21 @@ class ln_downloader():
                 filename = filename.replace(character, self.ILLEGAL_PATH_DICT[character])
         return filename
 
-    def createIndexPage(self, novel_title: str, acn: bool, last, writer_name: str, description: str, index) -> None:
-        with open(f"{self.database_path}/{novel_title}/0. index.html", "w", encoding="utf-8") as file:
+    def createIndexPage(self, title: str, acn: bool, last, writer: str, description: str, index) -> None:
+        with open(f"{self.database_path}/{title}/0. index.html", "w", encoding="utf-8") as file:
             # Write must be str/NavigableString, not Tag
-            file.write(f'<title>{novel_title}</title>\n')
+            file.write(f'<title>{title}</title>\n')
             file.write(self.CSS)
             file.write(f'<!-- append = {acn} -->\n')
             file.write(f'<!-- last = {last} -->\n')
-            file.write(f'<h1 style="text-align: center;">{novel_title}</h1>\n')
-            file.write(f'<h2 style="text-align: center;">作者：{writer_name}</h2>\n')
+            file.write(f'<h1 style="text-align: center;">{title}</h1>\n')
+            file.write(f'<h2 style="text-align: center;">作者：{writer}</h2>\n')
             file.write(str(description))
             file.write(str(index))
 
-    def updateIndexPage(self, novel_title: str, acn: bool, code, first: int, last: int, index) -> None:
+    def updateIndexPage(self, title: str, acn: bool, code, first: int, last: int, index) -> None:
         subtitle_list = index.find_all("a")
-        with open(f"{self.database_path}/{novel_title}/0. index.html", "r+", encoding="utf-8") as file:
+        with open(f"{self.database_path}/{title}/0. index.html", "r+", encoding="utf-8") as file:
             content = file.read()
             for i in range(first, last):
                 if acn:
@@ -136,7 +136,7 @@ class ln_downloader():
             file.seek(0)
             file.write(content)
 
-    def downloadChapterContent(self, novel_title: str, acn: bool, chapter_link, first: int, last: int) -> None:
+    def downloadChapterContent(self, title: str, acn: bool, chapter_link, first: int, last: int) -> None:
         for i in range(first, last + 1):
             website = requests.get(chapter_link[i-1], headers={"user-agent": 'Mozilla/5.0'}).text
             website = BeautifulSoup(website, 'html.parser')
@@ -148,7 +148,7 @@ class ln_downloader():
                 filename = subtitle
             filename = self.filenameValidation(filename)
             if filename:
-                with open(f"{self.database_path}/{novel_title}/{filename}.html", "w", encoding="utf-8") as file:
+                with open(f"{self.database_path}/{title}/{filename}.html", "w", encoding="utf-8") as file:
                     file.write(f'<h1 style="text-align: center;">{subtitle}</h1>\n')
                     for line in content:
                         line = str(line)
@@ -166,29 +166,29 @@ class ln_downloader():
         if web_response:
             index_page = web_response[0]
             code = web_response[1]
-            novel_title, writer_name, description, index, chapter_link, largest_chapter = self.getInfo(index_page, code)
+            title, writer, description, index, chapter_link, largest_chapter = self.getInfo(index_page, code)
             if skip:
                 download_range = ""
             else:
                 download_range = input("Download range (A for all, or enter a range separtaed by comma): ")
-            first, last = self.downloadRangeValidation(novel_title, download_range, largest_chapter)
+            first, last = self.downloadRangeValidation(title, download_range, largest_chapter)
             if first == last + 1 and len(chapter_link) != 1:
-                print("Light novel no change since the last download, update is not performed.")
+                print("The book does not have any changes since the last download, update is not performed.")
                 return
             if skip:
                 acn = ""
             else:
                 acn = input("Append chapter number to the filename? (Y/n): ")
             acn = self.chapterNumber(acn)
-            if not os.path.isdir(f"{self.database_path}/{novel_title}"):
-                os.mkdir(f"{self.database_path}/{novel_title}")
+            if not os.path.isdir(f"{self.database_path}/{title}"):
+                os.mkdir(f"{self.database_path}/{title}")
                 exist = False
             else:
                 exist = True
             if not exist:
-                self.createIndexPage(novel_title, acn, last, writer_name, description, index)
+                self.createIndexPage(title, acn, last, writer, description, index)
             else:
-                with open(f"{self.database_path}/{novel_title}/0. index.html", "r", encoding="utf-8") as file:
+                with open(f"{self.database_path}/{title}/0. index.html", "r", encoding="utf-8") as file:
                     if 'append = True' in file.read():
                         acn_prev = True
                     else:
@@ -200,12 +200,12 @@ class ln_downloader():
                     print("Appending chapter number to the filename is YES in old setting while you entered NO this time.")
                     acn = input("Do you want to change to YES? (Y/n):")
                     acn = self.chapterNumber(acn)
-                self.createIndexPage(novel_title, acn, last, writer_name, description, index)
-            print(f"Downloading {novel_title}")
-            self.downloadChapterContent(novel_title, acn, chapter_link, first, last)
-            self.updateIndexPage(novel_title, acn, code, first, last + 1, index)
+                self.createIndexPage(title, acn, last, writer, description, index)
+            print(f"Downloading {title}")
+            self.downloadChapterContent(title, acn, chapter_link, first, last)
+            self.updateIndexPage(title, acn, code, first, last + 1, index)
             if exist:
-                self.updateIndexPage(novel_title, acn, code, 1, first, index)
+                self.updateIndexPage(title, acn, code, 1, first, index)
             print("\nDone.")
 
     def update(self):
@@ -215,17 +215,19 @@ class ln_downloader():
             print("Your library is empty.")
         else:
             for book in lib["library"]:
-                print("===== Update =====")
-                print(f'Updating {book["title"]}')
-                self.download(False, book["url"], True)
+                if book["ended"] == "false":
+                    print("===== Update =====")
+                    print(f'Updating {book["title"]}')
+                    self.download(False, book["url"], True)
 
     def menu(self) -> None:
         print("===== Menu =====")
         print("1. Display all books in the library")
-        print("2. Add book to library")
-        print("3. Remove book from library")
-        print("4. Download the light novel from web")
-        print("5. Update the light novel in the library")
+        print("2. Add a book to the library")
+        print("3. Remove a book from the library")
+        print("4. Mark a book as ended")
+        print("5. Download the book from web")
+        print("6. Update the book in the library")
         print("0. Exit the program")
         option = input("Your option: ")
         if option == "1":
@@ -237,17 +239,20 @@ class ln_downloader():
             if web_response:
                 index_page = web_response[0]
                 code = web_response[1]
-                novel_title, writer_name, _, _, _, _ = self.getInfo(index_page, code)
-                entry = [novel_title, writer_name, url]
+                title, writer, _, _, _, _ = self.getInfo(index_page, code)
+                entry = [title, writer, url]
                 lnlibrary.addBook(entry)
             self.menu()
         elif option == "3":
             lnlibrary.removeBook(True, None)
             self.menu()
         elif option == "4":
-            self.download(True, None, False)
+            lnlibrary.markBook(True, None)
             self.menu()
         elif option == "5":
+            self.download(True, None, False)
+            self.menu()
+        elif option == "6":
             self.update()
             self.menu()
         elif option == "0":
@@ -261,30 +266,35 @@ class ln_downloader():
         parser.add_argument('-a', '--add',
                             metavar='<URL>',
                             type=str,
-                            help='add a light novel to the library')
+                            help='add a book to the library')
         parser.add_argument('-r', '--remove',
                             metavar='<book title>',
                             type=str,
-                            help='remove a light novel from the library')
+                            help='remove a book from the library')
+        parser.add_argument('-e', '--end',
+                            metavar='<book title>',
+                            type=str,
+                            help='mark a book as ended, a book marked as ended \
+                            will not be checked for update')
         parser.add_argument('-d', '--download',
                             metavar='<URL>',
                             type=str,
-                            help='download the light novel from the given URL')
+                            help='download the book from the given URL')
         parser.add_argument('-u', '--update',
                             action='store_true',
-                            help='update the light novel in the library')
+                            help='update the book in the library')
         parser.add_argument('-ad',
                             metavar='<URL>',
                             type=str,
-                            help='add a light novel to the library and then \
-                            download the light novel from the given URL')
+                            help='add a book to the library and then \
+                            download the book from the given URL')
         args = vars(parser.parse_args())
         self.database_path = lnlibrary.readLib()["path"]
         noneCount = 0
         for i in args.values():
             if i is None:
                 noneCount = noneCount + 1
-        if noneCount == 4 and args["update"] is False:
+        if noneCount == 5 and args["update"] is False:
             self.menu()
         else:
             if args["add"] is not None:
@@ -292,11 +302,13 @@ class ln_downloader():
                 if web_response:
                     index_page = web_response[0]
                     code = web_response[1]
-                    novel_title, writer_name, _, _, _, _ = self.getInfo(index_page, code)
-                    entry = [novel_title, writer_name, args["add"]]
+                    title, writer, _, _, _, _ = self.getInfo(index_page, code)
+                    entry = [title, writer, args["add"]]
                     lnlibrary.addBook(entry)
             if args["remove"] is not None:
                 lnlibrary.removeBook(False, args["remove"])
+            if args["end"] is not None:
+                lnlibrary.markBook(False, args["end"])
             if args["download"] is not None:
                 self.download(False, args["download"], True)
             if args["update"] is True:
@@ -306,8 +318,8 @@ class ln_downloader():
                 if web_response:
                     index_page = web_response[0]
                     code = web_response[1]
-                    novel_title, writer_name, _, _, _, _ = self.getInfo(index_page, code)
-                    entry = [novel_title, writer_name, args["add"]]
+                    title, writer, _, _, _, _ = self.getInfo(index_page, code)
+                    entry = [title, writer, args["add"]]
                     lnlibrary.addBook(entry)
                     self.download(False, args["download"], True)
 
