@@ -1,124 +1,70 @@
-# syosetu-downloader
-A simple downloader for ncode.syosetu.com. The downloaded content will be saved in .html format.
+# novel-station
+A novel downloader and manager for online novel sites.
 
-## Requirements
-1. [Requests](https://github.com/psf/requests)
-2. [Beautiful Soup 4](https://www.crummy.com/software/BeautifulSoup/)
+## Overview
+This program offers a user-friendly graphical user interface (GUI) for downloading and managing online novels. The downloaded novels are stored in HTML format. The program uses a configuration file ```library.json``` to manage the storage path and book information.
 
-You can install the packages via PyPI  
-```sh
-pip3 install requests && pip3 install beautifulsoup4
+## Supported sites
+1. [小説家になろう](https://syosetu.com/)
+2. [紙言](www.shikoto.com)
+
+## Screenshot
+![User Interface](./img/ui.png)
+
+## Installation
+
+### Option 1: Download the executable binary
+Visit the [Release Page](https://github.com/makercyf/novel-station/releases) and download the latest executable binary. Run the binary to launch the program.
+
+**Note:** There is a false positive alarm of virus checking. The executable binary is compiled with [Nuitka in the GitHub Action environment](https://github.com/makercyf/novel-station/actions/workflows/main.yml), and a sha256 checksum is provided for verification. If you have concerns about viruses, you can follow the instructions below to run from the source. Also, I strongly encourage users to review the code before using someone else's application.
+
+### Option 2: Run from source
+1. Clone the repository to your local machine:
+```
+git clone https://github.com/makercyf/novel-station.git
+```
+2. Navigate to the project directory:
+```
+cd novel-station
+```
+3. Install the required dependencies:
+```
+pip install -r requirements.txt
 ```
 
 ## Usage
-This program support CLI mode and interactive mode. You will be asked to enter a path for storing the .HTML file, the path will be stored in the config file ```library.json```. The config file will also be used to store the book information in the library.
+Run the program:
+- If using the executable binary, click the application to start the program.
+- If running from source, run the python file directly using the command ```python main.py```
 
-### CLI mode
+### Remarks
+1. Managing the book: Double-clicking on a book item will open its corresponding folder, while right-clicking on the book item will trigger a context menu, providing an option to delete the book from the library. Notice that the downloaded content will **not** be deleted.
+2. Download limit: It is advised to download a small amount of chapters first, since the website may restrict your access if a large volume of requests is made in a short time. After that, you may try to increase the download amount to test its access limit in a certain time range.
 
-#### Optional arguments reference
+## Configuration
+The ```library.json``` file is crucial for maintaining user preferences and book information. Here is an example structure:
+```json
+{
+    "path": "C:/Users/user/Desktop/library",
+    "library": [
+        {
+            "title": "宝石吐きの女の子",
+            "author": "なみあと",
+            "url": "http://ncode.syosetu.com/n4843br/",
+            "ended": "✔",
+            "lastDownload": 0,
+            "appendChapterNum": null
+        },
+        {
+            "title": "十首歌十個故事",
+            "author": "chan ken",
+            "url": "https://www.shikoto.com/articles/275046.html",
+            "ended": "",
+            "lastDownload": 0,
+            "appendChapterNum": null
+        }
+    ]
+}
 ```
-usage: syosetu.py [-h] [-a <URL>] [-r <book title>] [-e <book title>] [-d <URL>] [-u] [-ad <URL>]
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -a <URL>, --add <URL>
-                        add a book to the library
-  -r <book title>, --remove <book title>
-                        remove a book from the library
-  -e <book title>, --end <book title>
-                        mark a book as ended, a book marked as ended will not be checked for update
-  -d <URL>, --download <URL>
-                        download the book from the given URL
-  -u, --update          update the book in the library
-  -ad <URL>             add a book to the library and then download the book from the given URL
-```
-
-### Interactive mode
-
-#### Menu page
-```
-user@ubuntu:~$ python3 syosetu.py
-===== Menu =====
-1. Display all books in the library
-2. Add book to library
-3. Remove book from library
-4. Download the light novel from web
-5. Update the light novel in the library
-0. Exit the program
-Your option:
-```
-Remarks:  
-Option 4 will **ONLY** download the book, but **NOT** adding the light novel to library. If you want to add the book to the library and download all chapters, you may follow the below sample.
-
-### Sample
-```
-user@ubuntu:~$ python3 syosetu.py
-===== Menu =====
-1. Display all books in the library
-2. Add a book to the library
-3. Remove a book from the library
-4. Mark a book as ended
-5. Download the book from web
-6. Update the book in the library
-0. Exit the program
-Your option: 2
-URL: https://ncode.syosetu.com/n4843br/
-Successfully added 宝石吐きの女の子 to library.
-===== Menu =====
-1. Display all books in the library
-2. Add a book to the library
-3. Remove a book from the library
-4. Mark a book as ended
-5. Download the book from web
-6. Update the book in the library
-0. Exit the program
-Your option: 6
-===== Update =====
-Updating 宝石吐きの女の子
-Downloading 宝石吐きの女の子
-Progress: 277/277
-Done.
-===== Menu =====
-1. Display all books in the library
-2. Add a book to the library
-3. Remove a book from the library
-4. Mark a book as ended
-5. Download the book from web
-6. Update the book in the library
-0. Exit the program
-Your option: 0
-user@ubuntu:~$
-```
-Remarks:  
-If you use the above method to download the book, the chapter number will be appended to the filename automatically.
-
-```
-user@ubuntu:~$ python3 syosetu.py
-===== Menu =====
-1. Display all books in the library
-2. Add a book to the library
-3. Remove a book from the library
-4. Mark a book as ended
-5. Download the book from web
-6. Update the book in the library
-0. Exit the program
-Your option: 5
-URL: https://ncode.syosetu.com/n8356ga/
-Download range (A for all, or enter a range separtaed by comma): a
-Append chapter number to the filename? (Y/n): y
-Downloading サイレント・ウィッチ
-Progress: 236/236
-Done.
-===== Menu =====
-1. Display all books in the library
-2. Add book to library
-3. Remove book from library
-4. Download the light novel from web
-5. Update the light novel in the library
-0. Exit the program
-Your option: 0
-user@ubuntu:~$
-```
-Remarks:  
-For option 4, the download range will be set to **all** and chapter number **will be append** to the filename if nothing is entered.  
-**If you downloaded that book before and want to update the content to the lastest chapter, simply enter nothing for both questions.**
+## License
+This project is licensed under the MIT License.
