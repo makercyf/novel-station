@@ -20,12 +20,12 @@ jobs:
       run: |
         pip install nuitka
     - name: Build binary with Nuitka
-      run: python -m nuitka --onefile --follow-imports main.py --output-filename="Novel Station" --windows-icon-from-ico="icon.ico" --assume-yes-for-downloads --enable-plugin=pyside6 --disable-console
+      run: python -m nuitka --onefile --follow-imports main.py --output-filename="NovelStation" --windows-icon-from-ico="icon.ico" --assume-yes-for-downloads --enable-plugin=pyside6 --disable-console
     - name: Calculate SHA256 hash
-      run: Get-FileHash -Path "Novel Station.exe" -Algorithm SHA256
+      run: Get-FileHash -Path "NovelStation.exe" -Algorithm SHA256
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
         name: executable
         path: |
-          Novel Station.exe
+          NovelStation.exe
