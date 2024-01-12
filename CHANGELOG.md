@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.5.0] - 2024-01-12
+
+### Added
+- Support one more site (www.shikoto.com).
+
+### Changed
+- Remove CLI and interactive mode, added a GUI for the program.
+
 ## [1.4.0] - 2023-02-01
 
 ### Added
