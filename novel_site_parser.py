@@ -114,7 +114,7 @@ class Syosetu(Site):
         description = website.find(id="novel_ex")
         chapter_link = []
         chapter_subtitle = []
-        index_box = ""
+        index_box = website.find('div', class_='index_box')
         while True:
             index = website.find_all("div", class_="index_box")[0]
             table_of_content = index.find_all("a")
@@ -124,8 +124,8 @@ class Syosetu(Site):
                 chapter_subtitle.append(link.string)
                 link["href"] = full_chapter_link
                 link["target"] = "_blank"
-            # print(table_of_content)
-            index_box += str(index)
+            content = index.find_all('dl', class_='novel_sublist2')
+            index_box.extend(content)
             multiple_index = website.find("div", class_="novelview_pager-box")
             if multiple_index is not None:
                 try:
@@ -138,7 +138,7 @@ class Syosetu(Site):
             else:
                 break
         largest_chapter = len(chapter_link)
-        return title, author, str(description), index_box, chapter_link, chapter_subtitle, largest_chapter
+        return title, author, str(description), str(index_box), chapter_link, chapter_subtitle, largest_chapter
 
     @classmethod
     def create_index_page(cls, library_path: str, title: str, title_path: str, author: str, description: str, index: str) -> None:
