@@ -21,6 +21,9 @@ class Downloader():
 
     def url_validation(self, url: str) -> requests.models.Response or bool:
         try:
+            if "?p" in url:
+                # get the main index page
+                url = url.split("?p")[0]
             response = requests.get(url, headers=self.browser_header)
         except RuntimeWarning:
             return False
@@ -36,7 +39,7 @@ class Downloader():
             url_split = url.split("/")
             if "syosetu.com" in url:
                 site = "syosetu"
-                if url_split[-1] == "":
+                if url_split[-1] == "" or "?p" in url_split[-1]:
                     code = url_split[-2]
                 else:
                     code = url_split[-1]
@@ -243,7 +246,6 @@ class Downloader():
                     novel_library.change_append_chapter_num(title, False)
 
             # create book folder if not exist
-
             downloaded_before = True
             if title_path:
                 if not os.path.isdir(f"{self.library_path}/{title_path}"):

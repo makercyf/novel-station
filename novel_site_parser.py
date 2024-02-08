@@ -107,20 +107,38 @@ class Syosetu(Site):
     def get_info(cls, response: requests.models.Response) -> Tuple[str, str, str, str, list, list, int]:
         website = BeautifulSoup(response.text, 'html.parser')
         title = website.title.string
-        author = website.find_all("div", class_="novel_writername")[0].find("a").string
+        try:
+            author = website.find_all("div", class_="novel_writername")[0].find("a").string
+        except AttributeError: # author does not have hyperlink
+            author = website.find_all("div", class_="novel_writername")[0].string.replace("作者：", "").replace("\n", "")
         description = website.find(id="novel_ex")
-        index = website.find_all("div", class_="index_box")[0]
         chapter_link = []
         chapter_subtitle = []
-        table_of_content = index.find_all("a")
-        for link in table_of_content:
-            full_chapter_link = "https://ncode.syosetu.com" + link.get("href")
-            chapter_link.append(full_chapter_link)
-            chapter_subtitle.append(link.string)
-            link["href"] = full_chapter_link
-            link["target"] = "_blank"
+        index_box = ""
+        while True:
+            index = website.find_all("div", class_="index_box")[0]
+            table_of_content = index.find_all("a")
+            for link in table_of_content:
+                full_chapter_link = "https://ncode.syosetu.com" + link.get("href")
+                chapter_link.append(full_chapter_link)
+                chapter_subtitle.append(link.string)
+                link["href"] = full_chapter_link
+                link["target"] = "_blank"
+            # print(table_of_content)
+            index_box += str(index)
+            multiple_index = website.find("div", class_="novelview_pager-box")
+            if multiple_index is not None:
+                try:
+                    url = website.find("a", class_="novelview_pager-next").get("href")
+                    next_index_page_url = "https://ncode.syosetu.com" + url
+                    response = requests.get(next_index_page_url, headers=cls.browser_header).text
+                    website = BeautifulSoup(response, 'html.parser')
+                except AttributeError: # last inedx page
+                    break
+            else:
+                break
         largest_chapter = len(chapter_link)
-        return title, author, str(description), str(index), chapter_link, chapter_subtitle, largest_chapter
+        return title, author, str(description), index_box, chapter_link, chapter_subtitle, largest_chapter
 
     @classmethod
     def create_index_page(cls, library_path: str, title: str, title_path: str, author: str, description: str, index: str) -> None:
