@@ -52,7 +52,7 @@ def update_last_download(title: str, last_download: int) -> None:
             break
 
 
-def get_append_chapter_num(title: str) -> bool or None:
+def get_append_chapter_num(title: str) -> bool | None:
     lib = read_lib()
     for book in lib["library"]:
         if book["title"] == title:

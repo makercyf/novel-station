@@ -14,17 +14,21 @@ import novel_site_parser
 class Downloader():
     ILLEGAL_PATH_DICT = {'/': '／', ':': '：', '?': '？', '"': '\''}
     ILLEGAL_PATH_LIST = '<>|*\\'
-    browser_header = {"user-agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
+    browser_header = {"user-agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'}
 
     def __init__(self, path: str):
         self.library_path = path
 
-    def url_validation(self, url: str) -> requests.models.Response or bool:
+    def url_validation(self, url: str) -> requests.models.Response | bool:
         try:
-            if "?p" in url:
-                # get the main index page
-                url = url.split("?p")[0]
-            response = requests.get(url, headers=self.browser_header)
+            cookies = {}
+            if "syosetu.com" in url:
+                if "?p" in url:
+                    # get the main index page
+                    url = url.split("?p")[0]
+                if "novel18.syosetu.com" in url:
+                    cookies = {"over18": "yes"}
+            response = requests.get(url, headers=self.browser_header, cookies=cookies)
         except RuntimeWarning:
             return False
         else:
@@ -33,7 +37,7 @@ class Downloader():
             else:
                 return False
 
-    def get_code(self, url: str) -> Tuple[str, str, str] or bool:
+    def get_code(self, url: str) -> Tuple[str, str, str] | bool:
         response = self.url_validation(url)
         if response:
             url_split = url.split("/")
@@ -51,7 +55,7 @@ class Downloader():
             QMessageBox.critical(self, "Error", "The URL is invalid, please try again.")
             return False
 
-    def add_book(self, url: str) -> list or None:
+    def add_book(self, url: str) -> list | None:
         result = self.get_code(url)
         if result:
             index_page = result[0]
@@ -72,12 +76,12 @@ class Downloader():
         if site == "syosetu":
             return novel_site_parser.Syosetu.get_info(index_page)
 
-    def update_spinbox_end_range(self, new_value):
+    def update_spinbox_end_range(self, new_value) -> None:
         self.range_button.setChecked(True)
         if self.end_range_box.value() < new_value:
             self.end_range_box.setValue(new_value)
 
-    def update_spinbox_start_range(self, new_value):
+    def update_spinbox_start_range(self, new_value) -> None:
         self.range_button.setChecked(True)
         # if self.start_range_box.value() > new_value:
         #     self.start_range_box.setValue(new_value)
@@ -154,7 +158,7 @@ class Downloader():
         #         last_chapter = largest_chapter
         #         return first_chapter, last_chapter
 
-    def path_validation(self, path: str) -> str or False:
+    def path_validation(self, path: str) -> str | bool:
         for character in Downloader.ILLEGAL_PATH_LIST:
             if character in path:
                 QMessageBox.critical(self, "Error", "Detected illegal character in the path.")
@@ -270,7 +274,7 @@ class Downloader():
             if not skip:
                 QMessageBox.information(None, "Download", f"Succesfully downloaded {title}.")
 
-    def update(self):
+    def update(self) -> None:
         lib = novel_library.read_lib()
         total_book = len(lib["library"])
         if total_book == 0:

@@ -9,10 +9,10 @@ from bs4 import BeautifulSoup
 class Site():
     ILLEGAL_PATH_DICT = {'/': '／', ':': '：', '?': '？', '"': '\''}
     ILLEGAL_PATH_LIST = '<>|*\\'
-    browser_header = {"user-agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
+    browser_header = {"user-agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'}
 
     @classmethod
-    def path_validation(cls, path: str) -> str or False:
+    def path_validation(cls, path: str) -> str | bool:
         for character in cls.ILLEGAL_PATH_LIST:
             if character in path:
                 return False
@@ -28,7 +28,7 @@ class Shikoto(Site):
         </style>\n'''
 
     @classmethod
-    def get_info(cls, response):
+    def get_info(cls, response) -> Tuple[str, str, str, str, list, list, int]:
         website = BeautifulSoup(response.text, 'html.parser')
         title = website.find("h1").string
         author = website.find('meta', {'name': 'author'}).get('content')
@@ -108,15 +108,15 @@ class Syosetu(Site):
         website = BeautifulSoup(response.text, 'html.parser')
         title = website.title.string
         try:
-            author = website.find_all("div", class_="novel_writername")[0].find("a").string
-        except AttributeError: # author does not have hyperlink
-            author = website.find_all("div", class_="novel_writername")[0].string.replace("作者：", "").replace("\n", "")
+            author = website.find("div", class_="novel_writername").find("a").string
+        except: # author does not have hyperlink
+            author = website.find("div", class_="novel_writername").string.replace("作者：", "").replace("\n", "")
         description = website.find(id="novel_ex")
         chapter_link = []
         chapter_subtitle = []
         index_box = website.find('div', class_='index_box')
         while True:
-            index = website.find_all("div", class_="index_box")[0]
+            index = website.find("div", class_="index_box")
             table_of_content = index.find_all("a")
             for link in table_of_content:
                 full_chapter_link = "https://ncode.syosetu.com" + link.get("href")
@@ -131,7 +131,7 @@ class Syosetu(Site):
                 try:
                     url = website.find("a", class_="novelview_pager-next").get("href")
                     next_index_page_url = "https://ncode.syosetu.com" + url
-                    response = requests.get(next_index_page_url, headers=cls.browser_header).text
+                    response = requests.get(next_index_page_url, headers=cls.browser_header, cookies={"over18": "yes"}).text
                     website = BeautifulSoup(response, 'html.parser')
                 except AttributeError: # last inedx page
                     break
@@ -171,7 +171,7 @@ class Syosetu(Site):
 
     @classmethod
     def download_chapter_content(cls, library_path: str, title_path: str, acn: bool, url: str, current_chapter: int) -> None:
-        response = requests.get(url, headers=cls.browser_header).text
+        response = requests.get(url, headers=cls.browser_header, cookies={"over18": "yes"}).text
         website = BeautifulSoup(response, 'html.parser')
         subtitle = website.find_all("p", class_="novel_subtitle")[0].string
         content = website.find_all("div", id="novel_honbun")[0]

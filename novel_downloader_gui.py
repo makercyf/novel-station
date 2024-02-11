@@ -24,7 +24,7 @@ class DownloaderGUI(QMainWindow):
         self.downloader = novel_downloader.Downloader(self.library_path)
         self.init_ui()
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         # Create a central widget and main layout
         central_widget = QWidget(self)
         self.setCentralWidget(central_widget)
@@ -117,7 +117,7 @@ class DownloaderGUI(QMainWindow):
         actions_layout.addStretch(1)
         main_layout.addLayout(actions_layout)
 
-    def add_book_to_treeview(self, book: dict, path: str):
+    def add_book_to_treeview(self, book: dict, path: str) -> None:
         book_item = QTreeWidgetItem(self.book_tree, [book["title"], book["author"], book["url"], book["ended"]])
         book_item.setData(0, Qt.UserRole, path)  # Using setData to store folder path
         book_ended_checkbox = QCheckBox()
@@ -126,14 +126,14 @@ class DownloaderGUI(QMainWindow):
         book_ended_checkbox.stateChanged.connect(self.update_book_status)
         self.book_tree.setItemWidget(book_item, 3, book_ended_checkbox)  # 3 is the column index for "Ended"
 
-    def display_all_books(self):
+    def display_all_books(self) -> None:
         # loop through the library and add items to the tree
         lib = novel_library.read_lib()
         for book in lib["library"]:
             path = lib["path"] + "\\" + book["title"]
             self.add_book_to_treeview(book, path)
 
-    def open_folder(self, item):
+    def open_folder(self, item) -> None:
         # Get the folder path from the hidden variable
         if QApplication.mouseButtons() == Qt.LeftButton:
             folder_path = item.data(0, Qt.UserRole)
@@ -144,7 +144,7 @@ class DownloaderGUI(QMainWindow):
                     # get the title of the book
                     QMessageBox.critical(self, "Error", f"Folder {item.text(0)} not found.")
 
-    def show_context_menu(self, position):
+    def show_context_menu(self, position) -> None:
         # Get the item at the clicked position
         item = self.book_tree.itemAt(position)
 
@@ -159,7 +159,7 @@ class DownloaderGUI(QMainWindow):
             if action == delete_action:
                 self.delete_item()
 
-    def delete_item(self):
+    def delete_item(self) -> None:
         # Get the currently selected item(s)
         selected_items = self.book_tree.selectedItems()
 
@@ -168,7 +168,7 @@ class DownloaderGUI(QMainWindow):
             novel_library.delete_book(item.text(0))
             (item.parent() or self.book_tree.invisibleRootItem()).removeChild(item)
 
-    def update_book_status(self):
+    def update_book_status(self) -> None:
         # Retrieve the checkbox object that emitted the signal
         checkbox = self.sender()
         # get the item that the checkbox belongs to
@@ -184,7 +184,7 @@ class DownloaderGUI(QMainWindow):
         else:
             novel_library.update_book_status(title, "")
 
-    def search_book(self):
+    def search_book(self) -> None:
         search_input = self.sender().text()
         lib = novel_library.read_lib()
         if search_input:
@@ -197,7 +197,7 @@ class DownloaderGUI(QMainWindow):
             for book in lib["library"]:
                 self.book_tree.findItems(book["title"], Qt.MatchExactly)[0].setHidden(False)
 
-    def add_book(self):
+    def add_book(self) -> None:
         # print(self.add_input.text())
         entry = self.downloader.add_book(self.add_input.text())
         if entry:
@@ -210,7 +210,7 @@ class DownloaderGUI(QMainWindow):
             if download == QMessageBox.Yes:
                 self.downloader.download(entry["url"])
 
-    def download_book(self):
+    def download_book(self) -> None:
         # print(self.download_input.text())
         self.downloader.download(self.download_input.text())
         self.download_input.clear()
