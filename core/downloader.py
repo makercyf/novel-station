@@ -7,8 +7,8 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QDialog, QDialogButtonBox, QHBoxLayout, QMessageBox, QProgressBar, QProgressDialog, QRadioButton, QSpinBox, QVBoxLayout
 
 
-import novel_library
-import novel_site_parser
+import library_manager
+import site_parsers
 
 
 class Downloader():
@@ -63,18 +63,18 @@ class Downloader():
             code = result[2]
             title, author, _, _, _, _, _ = self.get_info(index_page, site, code)
             entry = [title, author, url]
-            novel_library.add_book(entry)
+            library_manager.add_book(entry)
             return entry
         else:
             return None
 
     def get_info(self, index_page: str, site: str, code: str) -> Tuple[str, str, str, str, list, int]:
         # if site == "kakuyomu":
-        #     return novel_site_parser.Kakuyomu.get_info(index_page, code)
+        #     return site_parsers.Kakuyomu.get_info(index_page, code)
         if site == "shikoto":
-            return novel_site_parser.Shikoto.get_info(index_page)
+            return site_parsers.Shikoto.get_info(index_page)
         if site == "syosetu":
-            return novel_site_parser.Syosetu.get_info(index_page)
+            return site_parsers.Syosetu.get_info(index_page)
 
     def update_spinbox_end_range(self, new_value) -> None:
         self.range_button.setChecked(True)
@@ -137,7 +137,7 @@ class Downloader():
             if not os.path.isfile(f"{self.library_path}/{title_path}/0. index.html"):
                 return first_chapter, last_chapter
             else:
-                first_chapter = novel_library.get_last_download(title) + 1
+                first_chapter = library_manager.get_last_download(title) + 1
                 last_chapter = largest_chapter
         if last_chapter < first_chapter:
             QMessageBox.critical(self, "Error", "Download range is invalid, range set to all chapters.")
@@ -148,7 +148,7 @@ class Downloader():
         #     if not os.path.isfile(f"{self.library_path}/{title}/0. index.html"):
         #         return first_chapter, last_chapter
         #     else:
-        #         first_chapter = novel_library.getLastDownload(title) + 1
+        #         first_chapter = library_manager.getLastDownload(title) + 1
         #         last_chapter = largest_chapter
         #         return first_chapter, last_chapter
         # else:
@@ -172,25 +172,25 @@ class Downloader():
         # if site == "kakuyomu":
         #     pass
         if site == "shikoto":
-            novel_site_parser.Shikoto.create_index_page(self.library_path, title, title_path, author, description, index)
+            site_parsers.Shikoto.create_index_page(self.library_path, title, title_path, author, description, index)
         if site == "syosetu":
-            novel_site_parser.Syosetu.create_index_page(self.library_path, title, title_path, author, description, index)
+            site_parsers.Syosetu.create_index_page(self.library_path, title, title_path, author, description, index)
 
     def download_chapter_content(self, site: str, title: str, acn: bool, url: str, current_chapter: int) -> None:
         # if site == "kakuyomu":
         #     pass
         if site == "shikoto":
-            novel_site_parser.Shikoto.download_chapter_content(self.library_path, title, acn, url, current_chapter)
+            site_parsers.Shikoto.download_chapter_content(self.library_path, title, acn, url, current_chapter)
         if site == "syosetu":
-            novel_site_parser.Syosetu.download_chapter_content(self.library_path, title, acn, url, current_chapter)
+            site_parsers.Syosetu.download_chapter_content(self.library_path, title, acn, url, current_chapter)
 
     def update_index_page(self, site: str, title_path: str, acn: bool, first: int, last: int, chapter_subtitle: list) -> None:
         # if site == "kakuyomu":
         #     pass
         if site == "shikoto":
-            novel_site_parser.Shikoto.update_index_page(self.library_path, title_path, acn, first, last, chapter_subtitle)
+            site_parsers.Shikoto.update_index_page(self.library_path, title_path, acn, first, last, chapter_subtitle)
         if site == "syosetu":
-            novel_site_parser.Syosetu.update_index_page(self.library_path, title_path, acn, first, last, chapter_subtitle)
+            site_parsers.Syosetu.update_index_page(self.library_path, title_path, acn, first, last, chapter_subtitle)
 
     def update_download_progress(self, current_chapter, last_chapter) -> None:
         self.progress_bar.setValue(current_chapter)
@@ -239,15 +239,15 @@ class Downloader():
                 return False
 
             # chapter number validation
-            acn = novel_library.get_append_chapter_num(title)
+            acn = library_manager.get_append_chapter_num(title)
             if acn is None:
                 acn = QMessageBox.question(None, "Append Chapter Number", "Do you want to append chapter number to the filename?", QMessageBox.Yes | QMessageBox.No)
                 if acn == QMessageBox.Yes:
                     acn = True
-                    novel_library.change_append_chapter_num(title, True)
+                    library_manager.change_append_chapter_num(title, True)
                 else:
                     acn = False
-                    novel_library.change_append_chapter_num(title, False)
+                    library_manager.change_append_chapter_num(title, False)
 
             # create book folder if not exist
             downloaded_before = True
@@ -270,12 +270,12 @@ class Downloader():
             if downloaded_before:
                 self.update_index_page(site, title_path, acn, 1, first_chapter, chapter_subtitle)
 
-            novel_library.update_last_download(title, last_chapter)
+            library_manager.update_last_download(title, last_chapter)
             if not skip:
                 QMessageBox.information(None, "Download", f"Succesfully downloaded {title}.")
 
     def update(self) -> None:
-        lib = novel_library.read_lib()
+        lib = library_manager.read_lib()
         total_book = len(lib["library"])
         if total_book == 0:
             QMessageBox.information(None, "Update", "Your library is empty.")

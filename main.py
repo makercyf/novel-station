@@ -2,7 +2,7 @@ import sys
 
 from PySide6.QtWidgets import QApplication
 
-from novel_downloader_gui import DownloaderGUI
+from core.gui import DownloaderGUI
 
 
 if __name__ == '__main__':

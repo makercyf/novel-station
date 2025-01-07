@@ -5,8 +5,8 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QApplication, QCheckBox, QHeaderView, QHBoxLayout, QLabel, QLineEdit, QMainWindow, QMenu, QMessageBox, QPushButton, QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget
 
-import novel_downloader
-import novel_library
+import downloader
+import library_manager
 
 
 class DownloaderGUI(QMainWindow):
@@ -20,8 +20,8 @@ class DownloaderGUI(QMainWindow):
         icon = QIcon(pixmap)
         self.setWindowIcon(icon)
 
-        self.library_path = novel_library.read_lib()["path"]
-        self.downloader = novel_downloader.Downloader(self.library_path)
+        self.library_path = library_manager.read_lib()["path"]
+        self.downloader = downloader.Downloader(self.library_path)
         self.init_ui()
 
     def init_ui(self) -> None:
@@ -69,7 +69,7 @@ class DownloaderGUI(QMainWindow):
         path_layout.addWidget(path_btn)
         actions_layout.addWidget(path_label)
         actions_layout.addLayout(path_layout)
-        path_btn.clicked.connect(novel_library.set_lib_path)
+        path_btn.clicked.connect(library_manager.set_lib_path)
 
         # search function
         search_label = QLabel("Search in library")
@@ -128,7 +128,7 @@ class DownloaderGUI(QMainWindow):
 
     def display_all_books(self) -> None:
         # loop through the library and add items to the tree
-        lib = novel_library.read_lib()
+        lib = library_manager.read_lib()
         for book in lib["library"]:
             path = lib["path"] + "\\" + book["title"]
             self.add_book_to_treeview(book, path)
@@ -165,7 +165,7 @@ class DownloaderGUI(QMainWindow):
 
         # Iterate over selected items and remove them
         for item in selected_items:
-            novel_library.delete_book(item.text(0))
+            library_manager.delete_book(item.text(0))
             (item.parent() or self.book_tree.invisibleRootItem()).removeChild(item)
 
     def update_book_status(self) -> None:
@@ -180,13 +180,13 @@ class DownloaderGUI(QMainWindow):
 
         # Perform actions based on the checkbox state
         if checkbox_state:
-            novel_library.update_book_status(title, "✔")
+            library_manager.update_book_status(title, "✔")
         else:
-            novel_library.update_book_status(title, "")
+            library_manager.update_book_status(title, "")
 
     def search_book(self) -> None:
         search_input = self.sender().text()
-        lib = novel_library.read_lib()
+        lib = library_manager.read_lib()
         if search_input:
             for book in lib["library"]:
                 # hide treeview item if the search input is not in the title or author or url
